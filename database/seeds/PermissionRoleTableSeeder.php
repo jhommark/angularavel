@@ -19,7 +19,7 @@ class PermissionRoleTableSeeder extends Seeder
         foreach ($permissionNames as $permissionName)
         {
         	$permission = Permission::where('name', '=', $permissionName)->first();
-        	$role->attachPermission($permission);
+        	$role->perms()->attach($permission->id);
         }
     }
 }
