@@ -11,11 +11,12 @@ use App\User;
 
 class AuthController extends Controller
 {
-    public function register(Request $request) {
+    public function register(Request $request)
+    {
         $user = User::create([
-          'name' => $request->name,
-          'email' => $request->email,
-          'password' => bcrypt($request->password)
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => bcrypt($request->password)
         ]);
         return response()->json([
             'success' => true,
@@ -24,7 +25,8 @@ class AuthController extends Controller
         ]);
     }
 
-    public function login(Request $request) {
+    public function login(Request $request)
+    {
         $credentials = $request->only('email', 'password');
         $token = null;
         try {
@@ -48,41 +50,65 @@ class AuthController extends Controller
         ]);
     }
 
-    public function getAuthenticatedUser(Request $request) {
-        $user = JWTAuth::toUser($request->token);        
-        return response()->json(['success' => true, 'data' => $user]);
+    public function getAuthenticatedUser(Request $request)
+    {
+        $user = JWTAuth::toUser($request->token);
+        return response()->json([
+            'success' => true,
+            'data' => $user
+        ]);
     }
 
-    public function createRole(Request $request) {
+    public function createRole(Request $request)
+    {
         $role = new Role();
         $role->name = $request->name;
         $role->save();
-        return response()->json(['success' => true, 'data' => $role]);
+        return response()->json([
+            'success' => true,
+            'data' => $role
+        ]);
     }
 
-    public function createPermission(Request $request) {
+    public function createPermission(Request $request)
+    {
         $permission = new Permission();
         $permission->name = $request->name;
         $permission->save();
-        return response()->json(['success' => true, 'data' => $permission]);
+        return response()->json([
+            'success' => true,
+            'data' => $permission
+        ]);
     }
 
-    public function assignRole(Request $request) {
+    public function assignRole(Request $request)
+    {
         $user = User::where('email', '=', $request->email)->first();
         $role = Role::where('name', '=', $request->role)->first();
         $user->roles()->attach($role->id);
-        return response()->json(['success' => true, 'data' => $user->roles()->get()]);
+        return response()->json([
+            'success' => true,
+            'data' => $user->roles()->get()
+        ]);
     }
 
-    public function attachPermission(Request $request) {
+    public function attachPermission(Request $request)
+    {
         $role = Role::where('name', '=', $request->role)->first();
         $permission = Permission::where('name', '=', $request->name)->first();
         $role->perms()->attach($permission->id);
-        return response()->json(['success' => true, 'data' => $role->perms()->get()]);
+        return response()->json([
+            'success' => true,
+            'data' => $role->perms()->get()
+        ]);
     }
 
-    public function checkRoles(Request $request) {
+    public function checkRoles(Request $request)
+    {
         $user = User::where('email', '=', $request->email)->first();
-        return response()->json(['success' => true, 'data' => $user->roles()->get()]);
+        return response()->json([
+            'success' => true,
+            'data' => $user->roles()->get()
+        ]);
     }
 }
