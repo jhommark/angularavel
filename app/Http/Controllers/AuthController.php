@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use JWTAuth;
 use JWTAuthException;
 use App\Permission;
@@ -11,6 +12,23 @@ use App\User;
 
 class AuthController extends Controller
 {
+    /**
+     * Create a new AuthController instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        $this->middleware('auth:api', ['except' => ['register', 'login']]);
+    }
+
+    /**
+     * Register a user.
+     *
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function register(Request $request)
     {
         $user = User::create([
@@ -18,6 +36,7 @@ class AuthController extends Controller
             'email' => $request->email,
             'password' => bcrypt($request->password)
         ]);
+
         return response()->json([
             'success' => true,
             'message' => 'User created successfully',
@@ -25,38 +44,101 @@ class AuthController extends Controller
         ]);
     }
 
+    /**
+     * Get a JWT via given credentials.
+     *
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function login(Request $request)
     {
         $credentials = $request->only('email', 'password');
-        $token = null;
+
         try {
-            if (!$token = JWTAuth::attempt($credentials)) {
+            // verify the credentials and create a token for the user
+            if (!$token = $this->guard()->attempt($credentials)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Invalid email or password',
-                ]);
+                    'message' => 'Invalid credentials'
+                ], 401);
             }
-        } catch (JWTAuthException $e) {
+        } catch (JWTException $e) {
+            // something went wrong
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to create token',
-            ]);
+                'message' => 'Could not create token'
+            ], 500);
         }
+
+        return $this->respondWithToken($token);
+    }
+
+    /**
+     * Get the authenticated User.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getAuthenticatedUser()
+    {
         return response()->json([
-            'response' => 'success',
-            'data' => [
-                'token' => $token,
-            ],
+            'success' => true,
+            'data' => $this->guard()->user()
         ]);
     }
 
-    public function getAuthenticatedUser(Request $request)
+    /**
+     * Log the user out (Invalidate the token).
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function logout()
     {
-        $user = JWTAuth::toUser($request->token);
+        $this->guard()->logout();
+
         return response()->json([
             'success' => true,
-            'data' => $user
+            'message' => 'Successfully logged out'
         ]);
+    }
+
+    /**
+     * Refresh a token.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function refresh()
+    {
+        return $this->respondWithToken($this->guard()->refresh());
+    }
+
+    /**
+     * Get the token array structure.
+     *
+     * @param  string $token
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    protected function respondWithToken($token)
+    {
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'access_token' => $token,
+                'token_type' => 'bearer',
+                'expires_in' => $this->guard()->factory()->getTTL() * 60
+            ]
+        ]);
+    }
+
+    /**
+     * Get the guard to be used during authentication.
+     *
+     * @return \Illuminate\Contracts\Auth\Guard
+     */
+    protected function guard()
+    {
+        return Auth::guard();
     }
 
     public function createRole(Request $request)
@@ -64,6 +146,7 @@ class AuthController extends Controller
         $role = new Role();
         $role->name = $request->name;
         $role->save();
+
         return response()->json([
             'success' => true,
             'data' => $role
@@ -75,6 +158,7 @@ class AuthController extends Controller
         $permission = new Permission();
         $permission->name = $request->name;
         $permission->save();
+
         return response()->json([
             'success' => true,
             'data' => $permission
@@ -86,6 +170,7 @@ class AuthController extends Controller
         $user = User::where('email', '=', $request->email)->first();
         $role = Role::where('name', '=', $request->role)->first();
         $user->roles()->attach($role->id);
+
         return response()->json([
             'success' => true,
             'data' => $user->roles()->get()
@@ -97,6 +182,7 @@ class AuthController extends Controller
         $role = Role::where('name', '=', $request->role)->first();
         $permission = Permission::where('name', '=', $request->name)->first();
         $role->perms()->attach($permission->id);
+
         return response()->json([
             'success' => true,
             'data' => $role->perms()->get()
@@ -106,6 +192,7 @@ class AuthController extends Controller
     public function checkRoles(Request $request)
     {
         $user = User::where('email', '=', $request->email)->first();
+
         return response()->json([
             'success' => true,
             'data' => $user->roles()->get()

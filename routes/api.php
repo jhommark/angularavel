@@ -13,21 +13,29 @@ use Illuminate\Http\Request;
 |
 */
 
-// Route to view all roles
-Route::get('roles', 'AuthController@checkRoles');
-// Route to create a new role
-Route::post('role', 'AuthController@createRole');
-// Route to create a new permission
-Route::post('permission', 'AuthController@createPermission');
-// Route to assign role to user
-Route::post('assign-role', 'AuthController@assignRole');
-// Route to attach permission to a role
-Route::post('attach-permission', 'AuthController@attachPermission');
-// Route to create a new user
-Route::post('auth/register', 'AuthController@register');
-// Route to authenticate a user
-Route::post('auth/login', 'AuthController@login');
-Route::group(['middleware' => 'jwt.auth'], function () {
-	// Route to get the authenticated user
-	Route::get('user', 'AuthController@getAuthenticatedUser');
+Route::group(['middleware' => 'api'], function () {
+    Route::group(['prefix' => 'auth'], function () {
+        // Route to register a user
+        Route::post('register', 'AuthController@register');
+        // Route to get a JWT via given credentials.
+        Route::post('login', [ 'as' => 'login', 'uses' => 'AuthController@login']);
+        // Route to log the user out
+        Route::get('logout', 'AuthController@logout');
+        // Route to refresh a token
+        Route::get('refresh', 'AuthController@refresh');
+        // Route to get the authenticated user
+        Route::get('user', 'AuthController@getAuthenticatedUser');
+    });
+    Route::group(['middleware' => ['ability:admin,view-users']], function () {
+        // Route to view all roles
+        Route::get('roles', 'AuthController@checkRoles');
+        // Route to create a new role
+        Route::post('role', 'AuthController@createRole');
+        // Route to create a new permission
+        Route::post('permission', 'AuthController@createPermission');
+        // Route to assign role to user
+        Route::post('assign-role', 'AuthController@assignRole');
+        // Route to attach permission to a role
+        Route::post('attach-permission', 'AuthController@attachPermission');
+    });
 });
