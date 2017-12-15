@@ -16,7 +16,7 @@ use Illuminate\Http\Request;
 Route::group(['middleware' => 'api'], function () {
     Route::group(['prefix' => 'auth'], function () {
         // Route to register a user
-        Route::post('register', 'AuthController@register');
+        Route::post('register', [ 'as' => 'register', 'uses' => 'AuthController@register']);
         // Route to get a JWT via given credentials.
         Route::post('login', [ 'as' => 'login', 'uses' => 'AuthController@login']);
         // Route to log the user out
