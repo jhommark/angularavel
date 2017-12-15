@@ -63,7 +63,7 @@ class TokenEntrustAbility extends BaseMiddleware
             ], 404);
         }
 
-        if (!$request->user()->ability($roles, $permissions, ['validate_all' => $validateAll])) {
+        if (!$user->ability($roles, $permissions, ['validate_all' => $validateAll])) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized'
