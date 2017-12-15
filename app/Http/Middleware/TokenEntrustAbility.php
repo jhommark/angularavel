@@ -47,12 +47,12 @@ class TokenEntrustAbility extends BaseMiddleware
         } catch (TokenExpiredException $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => 'Token has expired'
             ], 400);
         } catch (JWTException $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => 'Could not decode token'
             ], 400);
         }
 
