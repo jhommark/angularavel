@@ -48,12 +48,12 @@ class TokenEntrustAbility extends BaseMiddleware
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
-            ], $e->getCode());
+            ], 400);
         } catch (JWTException $e) {
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
-            ], $e->getCode());
+            ], 400);
         }
 
         if (!$user) {
