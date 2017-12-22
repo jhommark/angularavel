@@ -8,6 +8,7 @@ use Tymon\JWTAuth\Exceptions\JWTException;
 use App\Permission;
 use App\Role;
 use App\User;
+use Validator;
 
 class AuthController extends Controller
 {
@@ -30,6 +31,18 @@ class AuthController extends Controller
      */
     public function register(Request $request)
     {
+        $validation = Validator::make($request->all(), [
+            'name' => 'required',
+            'email' => 'required|email|unique:users|max:255',
+            'password' => 'required|confirmed|min:8|max:20',
+        ]);
+        if ($validation->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'data' => $validation->errors()
+            ]);
+        }
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
