@@ -37,23 +37,15 @@ class AuthController extends Controller
             'password' => 'required|confirmed|min:8|max:20',
         ]);
         if ($validation->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'data' => $validation->errors()
-            ]);
+            return response()->error('Validation failed', 422, $validation->errors());
         }
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => bcrypt($request->password)
+            'password' => $request->password
         ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'User created successfully',
-            'data' => $user
-        ]);
+        return response()->success($user, 'Registered');
     }
 
     /**
@@ -70,17 +62,11 @@ class AuthController extends Controller
         try {
             // verify the credentials and create a token for the user
             if (!$token = $this->guard()->attempt($credentials)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Invalid credentials'
-                ], 401);
+                return response()->error('Invalid credentials', 401);
             }
         } catch (JWTException $e) {
             // something went wrong
-            return response()->json([
-                'success' => false,
-                'message' => 'Could not create token'
-            ], 500);
+            return response()->error('Could not create token', 500);
         }
 
         return $this->respondWithToken($token);
@@ -93,10 +79,7 @@ class AuthController extends Controller
      */
     public function getAuthenticatedUser()
     {
-        return response()->json([
-            'success' => true,
-            'data' => $this->guard()->user()
-        ]);
+        return response()->success($this->guard()->user());
     }
 
     /**
@@ -108,10 +91,7 @@ class AuthController extends Controller
     {
         $this->guard()->logout();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Successfully logged out'
-        ]);
+        return response()->success([], 'Logged out');
     }
 
     /**
@@ -133,13 +113,10 @@ class AuthController extends Controller
      */
     protected function respondWithToken($token)
     {
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'access_token' => $token,
-                'token_type' => 'bearer',
-                'expires_in' => $this->guard()->factory()->getTTL() * 60
-            ]
+        return response()->success([
+            'access_token' => $token,
+            'token_type' => 'bearer',
+            'expires_in' => $this->guard()->factory()->getTTL() * 60
         ]);
     }
 
@@ -159,10 +136,7 @@ class AuthController extends Controller
         $role->name = $request->name;
         $role->save();
 
-        return response()->json([
-            'success' => true,
-            'data' => $role
-        ]);
+        return response()->success($role);
     }
 
     public function createPermission(Request $request)
@@ -171,10 +145,7 @@ class AuthController extends Controller
         $permission->name = $request->name;
         $permission->save();
 
-        return response()->json([
-            'success' => true,
-            'data' => $permission
-        ]);
+        return response()->success($permission);
     }
 
     public function assignRole(Request $request)
@@ -183,10 +154,7 @@ class AuthController extends Controller
         $role = Role::where('name', '=', $request->role)->first();
         $user->roles()->attach($role->id);
 
-        return response()->json([
-            'success' => true,
-            'data' => $user->roles()->get()
-        ]);
+        return response()->success($user->roles()->get());
     }
 
     public function attachPermission(Request $request)
@@ -195,19 +163,13 @@ class AuthController extends Controller
         $permission = Permission::where('name', '=', $request->name)->first();
         $role->perms()->attach($permission->id);
 
-        return response()->json([
-            'success' => true,
-            'data' => $role->perms()->get()
-        ]);
+        return response()->success($role->perms()->get());
     }
 
     public function checkRoles(Request $request)
     {
         $user = User::where('email', '=', $request->email)->first();
 
-        return response()->json([
-            'success' => true,
-            'data' => $user->roles()->get()
-        ]);
+        return response()->success($user->roles()->get());
     }
 }

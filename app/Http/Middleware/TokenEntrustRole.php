@@ -31,32 +31,24 @@ class TokenEntrustRole extends BaseMiddleware
             ], 400);
         }
 
+        if (!$token = $this->auth->setRequest($request)->getToken()) {
+            return response()->error('Token not provided', 400);
+        }
+
         try {
             $user = $this->auth->authenticate($token);
         } catch (TokenExpiredException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Token has expired'
-            ], 400);
+            return response()->error('Token has expired', 400);
         } catch (JWTException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Could not decode token'
-            ], 400);
+            return response()->error('Could not decode token', 400);
         }
 
         if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'User does not exist'
-            ], 404);
+            return response()->error('User does not exist', 404);
         }
 
         if (!$user->hasRole($roles)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized'
-            ], 401);
+            return response()->error('Unauthorized', 401);
         }
 
         return $next($request);
