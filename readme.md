@@ -1,6 +1,10 @@
 # Angularavel - Laravel 5.5 with Angular 5 (Boiler Plate)
 
-## Installation:
+## Features:
+- JWT Authentication
+- Role-based Permissions
+
+## Installation
 
 ```
 Replicate `.env.example` to `.env` file and configure everything you need especially the database
@@ -38,13 +42,18 @@ npm run hot
 php artisan serve
 ```
 
-## To include component template to the component use following code:
+## To include component template, use the following code:
 ```ts
 'template': require('./app.component.html'),
 ```
 
-
-## To include component style to the component use following code:
+## To include component style, use the following code:
 ```ts
 'styles': [`${require('./app.component.scss')}`]
 ```
+
+## Credits and References:
+- <a href="https://github.com/christiannwamba/scotch-entrust">https://github.com/christiannwamba/scotch-entrust</a>
+- <a href="https://github.com/ehsanhasani/laravel-5-angular-4">https://github.com/ehsanhasani/laravel-5-angular-4</a>
+- <a href="https://github.com/tymondesigns/jwt-auth">https://github.com/tymondesigns/jwt-auth</a>
+- <a href="https://github.com/Zizaco/entrust">https://github.com/Zizaco/entrust</a>
