@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css?family=Raleway:100,600" rel="stylesheet" type="text/css" />
 </head>
 <body>
-    <my-app>Loading...</my-app>
+    <app>Loading...</app>
     <script type="text/javascript" src="{{asset('js/app.js')}}"></script>
 </body>
 </html>
